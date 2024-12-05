@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: gap: content: https://ssl.gstatic.com 'unsafe-eval'; media-src * blob: 'self' http://* 'unsafe-inline' 'unsafe-eval';">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Scanner de Código de Barras</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+
+    <link rel="stylesheet" href="css/styles.css">
+    
+</head>
+<body>
+    <div id="scanner-tab" class="tab-content active">
+        <div class="scanner-container">
+            <h2>📱 Scanner de Código de Barras</h2>
+            <button class="scan-button" id="startButton">Iniciar Scanner</button>            
+            <div id="reader"></div>
+            <div class="result-container" id="result">
+                <h3>Resultado do Scanner:</h3>
+                <p id="result-text"></p>
+                <p id="validation-message"></p>
+            </div>            
+        </div> 
+    </div>     
+    <div class="alert alert-info" style="font-size: 1.2em;">
+    <strong>Setor:</strong> <span id="sectorName"></span>
+    </div>
+    
+    <nav class="bottom-nav">
+        <a href="#scanner" class="nav-item active" data-tab="scanner-tab">
+            <i class="fas fa-qrcode"></i>
+            <span>Scanner</span>
+        </a>
+    </nav>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
