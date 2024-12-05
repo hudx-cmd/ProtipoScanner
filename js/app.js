@@ -79,7 +79,7 @@ async function updateStatusInAirtable(recordId) {
     const url = `${AIRTABLE_URL}/${recordId}`; // Endpoint do registro específico
     const data = {
         fields: {
-            status: "ok", // Atualiza o campo 'status' para 'ok'
+            Status: "ok", // Atualiza o campo 'status' para 'ok'
         },
     };
 
