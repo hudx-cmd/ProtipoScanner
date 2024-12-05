@@ -1,6 +1,6 @@
 const AIRTABLE_API_KEY = 'patG7MV5FXpkeFWqS.1fd2aea9e52ee4537eb78f5cc668a4785bd6d2d5118f2a40a8a03d522f72790c'; // Substitua pela sua API Key
-const BASE_ID = 'appkIkoO2SW02yNIW';         // Substitua pelo ID da sua base
-const TABLE_NAME = 'Table1';         // Nome da tabela no Airtable
+const BASE_ID = 'appkIkoO2SW02yNIW'; // Substitua pelo ID da sua base
+const TABLE_NAME = 'Table1'; // Nome da tabela no Airtable
 const AIRTABLE_URL = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
 
 const headers = {
@@ -16,16 +16,15 @@ function displaySector(sector) {
 
     sectorName.textContent = sector;
     sectorInfo.style.display = 'block';
-
 }
 
-
- 
 function startScanning() {
-    navigator.mediaDevices.getUserMedia({ video: {
-        facingMode: "environment", // Câmera traseira
-        focusMode: "continuous"    // Tenta focar continuamente
-    } })
+    navigator.mediaDevices.getUserMedia({
+        video: {
+            facingMode: "environment", // Câmera traseira
+            focusMode: "continuous"    // Tenta focar continuamente
+        }
+    })
         .then(() => {
             html5QrcodeScanner.start(
                 { facingMode: "environment" },
@@ -51,22 +50,23 @@ function stopScanning() {
 
 async function fetchProductFromAirtable(code) {
     const filter = `filterByFormula=SEARCH("${code}", {Patrimônio})`; // Busca pelo código de barras no campo 'Patrimônio'
-    console.log("Consultando Airtable com o código:", code); // Log para depuração
+    console.log("Consultando Airtable com o código:", code);
 
     try {
         const response = await axios.get(`${AIRTABLE_URL}?${filter}`, { headers });
 
-        // Verifica se a consulta retornou algum produto
         if (response.data.records.length > 0) {
-            const product = response.data.records[0].fields;
-            console.log("Produto encontrado:", product); // Log para depuração
+            const record = response.data.records[0];
+            console.log("Produto encontrado:", record.fields);
+
             return {
-                patrimonio: product.Patrimônio,
-                setor: product.Setor,
-                descricao: product.Descrição,
+                recordId: record.id,          // ID do registro para atualizar o status
+                patrimonio: record.fields.Patrimônio,
+                setor: record.fields.Setor,
+                descricao: record.fields.Descrição,
             };
         } else {
-            console.log("Produto não encontrado no Airtable."); // Log para depuração
+            console.log("Produto não encontrado no Airtable.");
             return null;
         }
     } catch (error) {
@@ -75,8 +75,24 @@ async function fetchProductFromAirtable(code) {
     }
 }
 
+async function updateStatusInAirtable(recordId) {
+    const url = `${AIRTABLE_URL}/${recordId}`; // Endpoint do registro específico
+    const data = {
+        fields: {
+            status: "ok", // Atualiza o campo 'status' para 'ok'
+        },
+    };
+
+    try {
+        const response = await axios.patch(url, data, { headers });
+        console.log("Status atualizado com sucesso:", response.data);
+    } catch (error) {
+        console.error("Erro ao atualizar o status no Airtable:", error);
+    }
+}
+
 async function onScanSuccess(decodedText) {
-    console.log(`Código detectado: ${decodedText}`); // Log para depuração
+    console.log(`Código detectado: ${decodedText}`);
 
     const resultContainer = document.getElementById('result');
     const resultText = document.getElementById('result-text');
@@ -85,11 +101,10 @@ async function onScanSuccess(decodedText) {
     resultContainer.style.display = 'block';
     resultText.textContent = decodedText;
 
-  // Realiza três vibrações
+    // Realiza três vibrações
     if (navigator.vibrate) {
-        navigator.vibrate([200, 100, 200]); // Vibrações: [duração, pausa, duração, pausa, duração]
-    }   
-    
+        navigator.vibrate([200, 100, 200]); // Vibrações: [duração, pausa, duração]
+    }
 
     // Consulta o produto no Airtable
     const product = await fetchProductFromAirtable(decodedText);
@@ -103,7 +118,12 @@ async function onScanSuccess(decodedText) {
             <strong>Setor:</strong> ${product.setor}<br>
             <strong>Descrição:</strong> ${product.descricao}
         `;
-        displaySector(product.setor)
+
+        // Atualiza o campo 'status' no Airtable
+        await updateStatusInAirtable(product.recordId);
+
+        // Exibe o setor destacado
+        displaySector(product.setor);
     } else {
         resultContainer.classList.remove('result-success');
         resultContainer.classList.add('result-error');
@@ -112,8 +132,6 @@ async function onScanSuccess(decodedText) {
 
     addToHistory(decodedText);
 }
-
-
 
 function onScanError(error) {
     console.warn(`Erro durante a leitura: ${error}`);
