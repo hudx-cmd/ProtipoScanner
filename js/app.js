@@ -56,8 +56,8 @@ function displaySector(sector) {
 function startScanning() {
     navigator.mediaDevices.getUserMedia({
         video: {
-            facingMode: "environment", // Câmera traseira
-            focusMode: "continuous"    // Tenta focar continuamente
+            facingMode: "environment" // Câmera traseira
+            //focusMode: "continuous"    // Tenta focar continuamente
         }
     })
         .then(() => {
@@ -65,7 +65,7 @@ function startScanning() {
                 { facingMode: "environment" },
                 {
                     fps: 5,
-                    qrbox: { width: 300, height: 200 }
+                    qrbox: { width: 300, height: 300 }
                 },
                 onScanSuccess,
                 onScanError
