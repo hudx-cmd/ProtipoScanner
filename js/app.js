@@ -10,6 +10,41 @@ const headers = {
 
 const html5QrcodeScanner = new Html5Qrcode("reader");
 
+// Variável global para armazenar o local de leitura
+let localDeLeitura = "";
+
+// Preenche a caixa de seleção com os setores disponíveis no Airtable
+async function populateSectorDropdown() {
+    const dropdown = document.getElementById('sectorDropdown');
+    dropdown.innerHTML = '<option value="">Selecione o local de leitura</option>';
+
+    try {
+        const response = await axios.get(AIRTABLE_URL, { headers });
+
+        const setores = new Set();
+        response.data.records.forEach(record => {
+            if (record.fields.Setor) {
+                setores.add(record.fields.Setor);
+            }
+        });
+
+        setores.forEach(setor => {
+            const option = document.createElement('option');
+            option.value = setor;
+            option.textContent = setor;
+            dropdown.appendChild(option);
+        });
+    } catch (error) {
+        console.error("Erro ao buscar setores no Airtable:", error);
+    }
+}
+
+// Atualiza a variável `localDeLeitura` quando um setor é selecionado
+document.getElementById('sectorDropdown').addEventListener('change', (e) => {
+    localDeLeitura = e.target.value;
+    console.log(`Local de leitura selecionado: ${localDeLeitura}`);
+});
+
 function displaySector(sector) {
     const sectorInfo = document.getElementById('sectorInfo');
     const sectorName = document.getElementById('sectorName');
@@ -49,7 +84,7 @@ function stopScanning() {
 }
 
 async function fetchProductFromAirtable(code) {
-    const filter = `filterByFormula=SEARCH("${code}", {Patrimônio})`; // Busca pelo código de barras no campo 'Patrimônio'
+    const filter = `filterByFormula=SEARCH("${code}", {Patrimônio})`;
     console.log("Consultando Airtable com o código:", code);
 
     try {
@@ -60,7 +95,7 @@ async function fetchProductFromAirtable(code) {
             console.log("Produto encontrado:", record.fields);
 
             return {
-                recordId: record.id,          // ID do registro para atualizar o status
+                recordId: record.id,
                 patrimonio: record.fields.Patrimônio,
                 setor: record.fields.Setor,
                 descricao: record.fields.Descrição,
@@ -75,11 +110,11 @@ async function fetchProductFromAirtable(code) {
     }
 }
 
-async function updateStatusInAirtable(recordId) {
-    const url = `${AIRTABLE_URL}/${recordId}`; // Endpoint do registro específico
+async function updateStatusInAirtable(recordId, status) {
+    const url = `${AIRTABLE_URL}/${recordId}`;
     const data = {
         fields: {
-            Status: "ok", // Atualiza o campo 'status' para 'ok'
+            status: status,
         },
     };
 
@@ -103,7 +138,7 @@ async function onScanSuccess(decodedText) {
 
     // Realiza três vibrações
     if (navigator.vibrate) {
-        navigator.vibrate([200, 100, 200]); // Vibrações: [duração, pausa, duração]
+        navigator.vibrate([200, 100, 200]);
     }
 
     // Consulta o produto no Airtable
@@ -119,10 +154,15 @@ async function onScanSuccess(decodedText) {
             <strong>Descrição:</strong> ${product.descricao}
         `;
 
-        // Atualiza o campo 'status' no Airtable
-        await updateStatusInAirtable(product.recordId);
+        if (product.setor === localDeLeitura) {
+            await updateStatusInAirtable(product.recordId, "ok");
+        } else {
+            await updateStatusInAirtable(
+                product.recordId,
+                `ok, equipamento estava no ${localDeLeitura}`
+            );
+        }
 
-        // Exibe o setor destacado
         displaySector(product.setor);
     } else {
         resultContainer.classList.remove('result-success');
@@ -162,3 +202,6 @@ document.getElementById('startButton').addEventListener('click', function () {
         this.textContent = "Parar Scanner";
     }
 });
+
+// Inicializa o dropdown com os setores disponíveis
+populateSectorDropdown();
