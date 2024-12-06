@@ -64,8 +64,8 @@ function startScanning() {
             html5QrcodeScanner.start(
                 { facingMode: "environment" },
                 {
-                    fps: 20,
-                    qrbox: { width: 200, height: 200 }
+                    fps: 5,
+                    qrbox: { width: 300, height: 200 }
                 },
                 onScanSuccess,
                 onScanError
