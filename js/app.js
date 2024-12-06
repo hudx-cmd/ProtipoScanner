@@ -114,7 +114,7 @@ async function updateStatusInAirtable(recordId, status) {
     const url = `${AIRTABLE_URL}/${recordId}`;
     const data = {
         fields: {
-            status: status,
+            Status: status,
         },
     };
 
