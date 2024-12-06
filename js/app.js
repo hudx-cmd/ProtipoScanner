@@ -56,16 +56,16 @@ function displaySector(sector) {
 function startScanning() {
     navigator.mediaDevices.getUserMedia({
         video: {
-            facingMode: "environment" // Câmera traseira
-            //focusMode: "continuous"    // Tenta focar continuamente
+            facingMode: "environment", // Câmera traseira
+            focusMode: "continuous"    // Tenta focar continuamente
         }
     })
         .then(() => {
             html5QrcodeScanner.start(
                 { facingMode: "environment" },
                 {
-                    fps: 5,
-                    qrbox: { width: 300, height: 300 }
+                    fps: 20,
+                    qrbox: { width: 200, height: 200 }
                 },
                 onScanSuccess,
                 onScanError
